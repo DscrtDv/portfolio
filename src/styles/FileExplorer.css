@@ -1,0 +1,58 @@
+/* src/styles/FileExplorer.css */
+
+.file-explorer {
+  width: 250px; /* Fixed width */
+  min-width: 200px;
+  height: 100%;
+  background-color: #050505; /* Slightly darker than terminal */
+  border-right: 1px solid #333; /* Separator line */
+  display: flex;
+  flex-direction: column;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  overflow-y: auto; /* Scroll if too many files */
+  
+  /* Scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #333 #050505;
+}
+
+.explorer-header {
+  padding: 1rem;
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #222;
+  margin-bottom: 0.5rem;
+}
+
+/* Recursive Tree Styles */
+.tree-indent {
+  display: flex;
+  flex-direction: column;
+  padding-left: 15px; /* Indentation for children */
+  border-left: 1px solid #222; /* Thread guide line */
+}
+
+.tree-item {
+  cursor: pointer;
+  padding: 4px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #888; /* Default text dim */
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+/* Icons/Colors */
+.icon-dir { color: #4d96ff; } /* Blue folders */
+.icon-file { color: #e0e0e0; } /* White files */

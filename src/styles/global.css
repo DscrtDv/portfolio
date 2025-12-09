@@ -1,0 +1,19 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+
+@theme {
+  /* This overrides the default 'font-mono' utility */
+  --font-mono: "Fira Code", monospace;
+}
+
+/* Optional: Custom scrollbar for that "hacker" feel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117; 
+}
+::-webkit-scrollbar-thumb {
+  background: #238636; 
+  border-radius: 5px;
+}

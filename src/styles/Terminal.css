@@ -1,0 +1,201 @@
+/* src/components/Terminal.css */
+:root {
+  --bg-color: #0a0a0a;
+  --text-main: #e0e0e0;
+  --text-dim: #888;
+  --color-dir: #4d96ff;
+  --color-file: #e0e0e0;
+  --color-cmd: #4af626;
+  --color-err: #ff4444;
+  --font-stack: 'Courier New', Courier, monospace;
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color);
+  overflow: hidden; 
+  display: block;
+}
+
+/* --- MAIN LAYOUT (Split Screen) --- */
+.app-container {
+  display: flex;
+  width: 95%;
+  max-width: 1600px;
+  height: 90vh; /* Takes up 90% of viewport height */
+  margin: 5vh auto; /* Center vertically and horizontally */
+  border: 1px solid #333;
+  background-color: var(--bg-color);
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  position: relative;
+  z-index: 1; /* Sit above scanlines */
+}
+
+/* --- TERMINAL PANEL (Right Side) --- */
+.terminal-panel {
+  flex-grow: 1; /* Fills the rest of the width */
+  height: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll inside the panel */
+  
+  color: var(--text-main);
+  font-family: var(--font-stack);
+  font-size: 1.1rem;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
+
+  /* Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #333 var(--bg-color);
+}
+
+.terminal-panel::-webkit-scrollbar { width: 10px; }
+.terminal-panel::-webkit-scrollbar-track { background: var(--bg-color); }
+.terminal-panel::-webkit-scrollbar-thumb { 
+  background: #333; 
+  border: 1px solid #555; 
+  border-radius: 4px;
+}
+
+/* --- OUTPUT STYLING --- */
+
+/* Generic wrapper for history lines */
+.output-line {
+  margin-bottom: 5px;
+  line-height: 1.5;
+  width: 100%; 
+  display: block; 
+}
+
+/* Wrapper for the USER'S command input in history */
+.command-echo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Helper for file content (cat) to preserve newlines */
+.pre-wrap {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* --- MARKDOWN STYLING --- */
+.markdown-output {
+  width: 100%;
+  font-family: var(--font-stack);
+  line-height: 1.6;
+}
+
+.markdown-output h1, 
+.markdown-output h2, 
+.markdown-output h3 {
+  color: var(--color-dir);
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  border-bottom: 1px dashed #333;
+}
+
+.markdown-output p { margin-bottom: 1rem; }
+.markdown-output ul, .markdown-output ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+.markdown-output li { margin-bottom: 0.2rem; list-style: square; }
+.markdown-output a { color: var(--color-cmd); text-decoration: underline; cursor: pointer; }
+.markdown-output code {
+  background-color: #222;
+  padding: 0 4px;
+  border-radius: 2px;
+  color: #ffbd2e;
+}
+
+/* --- ASCII ART --- */
+.ascii-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.ascii-art {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  white-space: pre; 
+  color: var(--color-cmd);
+  font-weight: bold;
+  text-align: left; 
+}
+
+/* --- UTILITIES --- */
+.is-dir { color: var(--color-dir); font-weight: bold; }
+.is-file { color: var(--color-file); }
+.is-cmd { color: var(--color-cmd); }
+.is-error { color: var(--color-err); }
+
+/* --- INPUT AREA --- */
+.input-area {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.prompt-label {
+  margin-right: 10px;
+  color: var(--color-cmd);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.terminal-input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-stack);
+  font-size: 1.1rem;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  caret-color: transparent;
+  min-width: 1px;
+}
+
+.cursor-block {
+  display: inline-block;
+  width: 10px;
+  height: 1.2rem;
+  background-color: var(--text-main);
+  animation: blink 1s step-end infinite;
+  margin-left: 1px;
+}
+
+.click-trap {
+    flex-grow: 1;
+    height: 1.2rem;
+    cursor: text;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* --- CRT OVERLAY --- */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
