@@ -3,9 +3,29 @@ import ReactMarkdown from 'react-markdown';
 import '../styles/Terminal.css';
 import { FILE_SYSTEM } from '../utils/fileSystem';
 import FileExplorer from './FileExplorer'; 
+import FileViewer from './FileViewer';
 
-// --- CONSTANTS ---
-const ASCII_ART = `
+// --- ASCII ART CONSTANTS ---
+
+const TT_LOGO = `
+ ╔╦╗ ╔╦╗
+  ║   ║
+  ╩   ╩
+TT41 SYSTEM
+`;
+
+const SYSTEM_INFO = `
+USER:     guest@tt41
+OS:       PortfolioOS v1.0
+KERNEL:   React + Vite
+UPTIME:   00:00:01
+SHELL:    TS-BASH
+RES:      1920x1080
+THEME:    Cyber Circuit
+CPU:      Virtual Neural Net
+`;
+
+const ASCII_WELCOME = `
  _       __     __                             
 | |     / /__  / /________  ____ ___  ___      
 | | /| / / _ \\/ / ___/ __ \\/ __ \`__ \\/ _ \\     
@@ -13,71 +33,150 @@ const ASCII_ART = `
 |__/|__/\\___/_/\\___/\\____/_/ /_/ /_/\\___/      
 `;
 
-const WELCOME_MESSAGE = (
-  <>
-    <div className="ascii-wrapper">
-      <div className="ascii-art">{ASCII_ART}</div>
-    </div>
-    <div>
-      SYSTEM ONLINE. Type <span className="is-cmd">help</span> for command list.
-    </div>
-  </>
-);
-
 const HELP_COMMANDS = [
+  { cmd: 'sysinfo', desc: 'Display system information' },
   { cmd: 'pwd', desc: 'Print working directory' },
   { cmd: 'ls', desc: 'List directory content' },
-  { cmd: 'cd [dir]', desc: 'Change directory' },
+  { cmd: 'cd [dir]', desc: 'Change directory (supports ..)' },
   { cmd: 'cat [file]', desc: 'Read file content' },
-  { cmd: 'clear', desc: 'Clear screen' },
+  { cmd: 'close', desc: 'Close active file viewer' },
+  { cmd: 'clear', desc: 'Clear screen (Ctrl+L)' },
 ];
+
+type BootPhase = 'loading' | 'login_msg' | 'welcome_msg' | 'ready';
 
 const Terminal: React.FC = () => {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState<React.ReactNode[]>([]);
   const [currentPath, setCurrentPath] = useState('~');
   
+  // State for the open file (Split View)
+  const [activeFile, setActiveFile] = useState<{name: string, content: string} | null>(null);
+  
   const [history, setHistory] = useState<string[]>([]);
   const [historyPtr, setHistoryPtr] = useState(-1);
   
-  const [isBooting, setIsBooting] = useState(true);
+  // Boot State Machine
+  const [bootPhase, setBootPhase] = useState<BootPhase>('loading');
   const [loadingBar, setLoadingBar] = useState(0);
   
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // NEW: Track cursor position to toggle block vs bar cursor
+  const [cursorPos, setCursorPos] = useState(0);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // 1. Boot Logic
+  // --- HELPER: Path Resolution Algorithm ---
+  const resolvePath = (base: string, target: string): string => {
+    // 1. If target starts with '~', it's absolute. Ignore base.
+    //    Else, it's relative. Start from base.
+    let startParts = base === '~' ? [] : base.slice(2).split('/');
+    if (target.startsWith('~/')) {
+      startParts = [];
+      target = target.slice(2);
+    } else if (target === '~') {
+      return '~';
+    }
+
+    // 2. Split target into segments
+    const targetParts = target.split('/');
+
+    // 3. Process segments
+    for (const part of targetParts) {
+      if (part === '.' || part === '') continue; // Current dir
+      if (part === '..') {
+        // Go back up one level
+        if (startParts.length > 0) startParts.pop();
+      } else {
+        // Go down
+        startParts.push(part);
+      }
+    }
+
+    // 4. Reconstruct
+    if (startParts.length === 0) return '~';
+    return '~/' + startParts.join('/');
+  };
+
+  // --- HELPER: System Info ---
+  const renderSysInfo = (isCentered: boolean) => (
+    <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: isCentered ? 'center' : 'flex-start', 
+        gap: '3rem',
+        marginLeft: isCentered ? '0' : '10px',
+        flexWrap: 'wrap'
+    }}>
+        <div className="ascii-art" style={{ color: 'var(--color-cmd)' }}>
+          {TT_LOGO}
+        </div>
+        <div className="ascii-art" style={{ color: 'var(--text-main)', textAlign: 'left', fontSize: '0.9rem' }}>
+          {SYSTEM_INFO}
+        </div>
+    </div>
+  );
+
+  // --- BOOT SEQUENCE LOGIC ---
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isBooting) {
+    let timeout: NodeJS.Timeout;
+
+    if (bootPhase === 'loading') {
       interval = setInterval(() => {
         setLoadingBar((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
-            setIsBooting(false);
+            setBootPhase('login_msg'); 
             return 100;
           }
-          return prev + 5; 
+          return prev + 1; 
         });
-      }, 30);
-    }
-    return () => clearInterval(interval);
-  }, [isBooting]);
+      }, 30); 
 
+    } else if (bootPhase === 'login_msg') {
+      const handleKeyPress = () => setBootPhase('welcome_msg');
+      window.addEventListener('keydown', handleKeyPress);
+      window.addEventListener('click', handleKeyPress);
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+        window.removeEventListener('click', handleKeyPress);
+      };
+
+    } else if (bootPhase === 'welcome_msg') {
+      timeout = setTimeout(() => setBootPhase('ready'), 1500);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [bootPhase]);
+
+  // Initial Ready Message
   useEffect(() => {
-    if (!isBooting) {
-       setOutput([<div key="init-welcome">{WELCOME_MESSAGE}</div>]);
+    if (bootPhase === 'ready') {
+       setOutput([
+         <div key="init">System initialized. Type <span className="is-cmd">help</span> to start.</div>
+       ]);
+       setTimeout(() => inputRef.current?.focus(), 10);
     }
-  }, [isBooting]);
+  }, [bootPhase]);
 
-  // 2. Auto-scroll
+  // Scroll logic
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [output, loadingBar, isBooting]);
+  }, [output, loadingBar, bootPhase]);
 
-  const handleFocus = () => inputRef.current?.focus();
+  const handleFocus = () => {
+      if (!isMobileMenuOpen) {
+          inputRef.current?.focus();
+      }
+  };
 
-  // 3. Command Logic
+  // --- COMMAND LOGIC ---
   const processCommand = (cmd: string) => {
     const cleanCmd = cmd.trim();
     if (!cleanCmd) return;
@@ -88,7 +187,6 @@ const Terminal: React.FC = () => {
     const args = cleanCmd.split(' ');
     const mainCmd = args[0].toLowerCase();
     
-    // Echo Line (The user's input)
     const echoLine = (
       <div key={Date.now() + '-echo'} className="command-echo">
         <span className="prompt-label">guest@system:{currentPath}$</span> 
@@ -112,14 +210,27 @@ const Terminal: React.FC = () => {
           </div>
         );
         break;
+
+      case 'sysinfo':
+        response = <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>{renderSysInfo(false)}</div>;
+        break;
       
       case 'pwd':
         response = <div>{currentPath}</div>;
         break;
 
       case 'clear':
-        setOutput([<div key={Date.now() + '-cls'}>{WELCOME_MESSAGE}</div>]);
+        setOutput([]); 
         return; 
+
+      case 'close':
+        if (activeFile) {
+            setActiveFile(null);
+            response = <span className="is-cmd">Closed {activeFile.name}.</span>;
+        } else {
+            response = <span className="is-error">Error: No file currently open.</span>;
+        }
+        break;
 
       case 'ls':
         const dir = FILE_SYSTEM[currentPath];
@@ -145,28 +256,14 @@ const Terminal: React.FC = () => {
       case 'cd':
         const target = args[1];
         if (!target || target === '.') break;
-        if (target === '..') {
-            if (currentPath === '~') {
-                response = <span className="is-error">Access Denied: Already at root.</span>;
-            } else {
-                const parts = currentPath.split('/');
-                parts.pop();
-                setCurrentPath(parts.join('/'));
-            }
-        } else {
-            let newPath = '';
-            if (target.startsWith('~/')) {
-              newPath = target;
-            } else {
-              newPath = currentPath === '~' ? `~/${target}` : `${currentPath}/${target}`;
-            }
-            if (newPath.endsWith('/')) newPath = newPath.slice(0, -1);
+        
+        // NEW: Resolve Path Logic
+        const newPath = resolvePath(currentPath, target);
 
-            if (FILE_SYSTEM[newPath] && FILE_SYSTEM[newPath].type === 'dir') {
-                setCurrentPath(newPath);
-            } else {
-                response = <span className="is-error">cd: no such directory: {target}</span>;
-            }
+        if (FILE_SYSTEM[newPath] && FILE_SYSTEM[newPath].type === 'dir') {
+            setCurrentPath(newPath);
+        } else {
+            response = <span className="is-error">cd: no such directory: {target}</span>;
         }
         break;
 
@@ -174,25 +271,16 @@ const Terminal: React.FC = () => {
         const fileTarget = args[1];
         if (!fileTarget) { response = <span className="is-error">Usage: cat [filename]</span>; break; }
         
-        let filePath = '';
-        if (fileTarget.startsWith('~/')) {
-            filePath = fileTarget;
-        } else {
-            filePath = currentPath === '~' ? `~/${fileTarget}` : `${currentPath}/${fileTarget}`;
-        }
+        // NEW: Resolve Path Logic
+        const resolvedFilePath = resolvePath(currentPath, fileTarget);
 
-        const node = FILE_SYSTEM[filePath];
+        const node = FILE_SYSTEM[resolvedFilePath];
 
         if (node && node.type === 'file' && node.content) {
-             // MARKDOWN RENDERING LOGIC
-             if (filePath.endsWith('.md')) {
-                 response = (
-                    <div className="markdown-output">
-                        <ReactMarkdown>{node.content}</ReactMarkdown>
-                    </div>
-                 );
+             if (resolvedFilePath.endsWith('.md')) {
+                 setActiveFile({ name: fileTarget, content: node.content });
+                 response = <span className="is-cmd">Opening {fileTarget} in viewer...</span>;
              } else {
-                 // Standard text rendering
                  response = <div className="pre-wrap">{node.content}</div>;
              }
         } else {
@@ -208,18 +296,24 @@ const Terminal: React.FC = () => {
     else setOutput((prev) => [...prev, echoLine]);
   };
 
-  // 4. Input Handler
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isBooting) return;
+    if (bootPhase !== 'ready') return;
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        setOutput([]);
+        return;
+    }
     if (e.key === 'Enter') {
       processCommand(input);
       setInput('');
+      setCursorPos(0);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (history.length > 0) {
         const newPtr = historyPtr === -1 ? history.length - 1 : Math.max(0, historyPtr - 1);
         setHistoryPtr(newPtr);
         setInput(history[newPtr]);
+        setCursorPos(history[newPtr].length);
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -228,9 +322,11 @@ const Terminal: React.FC = () => {
         if (newPtr >= history.length) {
           setHistoryPtr(-1);
           setInput('');
+          setCursorPos(0);
         } else {
           setHistoryPtr(newPtr);
           setInput(history[newPtr]);
+          setCursorPos(history[newPtr].length);
         }
       }
     } else if (e.key === 'Tab') {
@@ -246,18 +342,25 @@ const Terminal: React.FC = () => {
              const suffix = isDir ? '/' : '';
              args.pop();
              args.push(completion + suffix);
-             setInput(args.join(' '));
+             const newValue = args.join(' ');
+             setInput(newValue);
+             setCursorPos(newValue.length);
          }
       }
     }
   };
 
-  // 5. Explorer Handler (Bridges Sidebar -> Terminal)
+  // --- CURSOR TRACKING ---
+  const handleSelect = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    setCursorPos(e.currentTarget.selectionStart || 0);
+  };
+
   const handleExplorerSelect = (path: string, type: 'dir' | 'file') => {
     if (type === 'dir') {
       processCommand(`cd ${path}`);
     } else {
       processCommand(`cat ${path}`);
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -267,29 +370,57 @@ const Terminal: React.FC = () => {
     return `[${progress}] ${loadingBar}%`;
   };
 
+  const renderBootContent = () => {
+    switch(bootPhase) {
+      case 'loading':
+        return (
+          <div className="boot-sequence">
+             <div>INITIALIZING KERNEL...</div>
+             <div>LOADING MODULES...</div>
+             <div style={{ marginTop: '10px', color: 'var(--color-cmd)' }}>{renderLoader()}</div>
+          </div>
+        );
+      case 'login_msg':
+        return (
+          <div className="boot-message">
+             {renderSysInfo(true)}
+             <div style={{ marginTop: '2rem', color: '#555', animation: 'blink 1s infinite' }}>
+                [ PRESS ANY KEY TO CONTINUE ]
+             </div>
+          </div>
+        );
+      case 'welcome_msg':
+        return (
+          <div className="boot-message">
+             <div className="ascii-art">{ASCII_WELCOME}</div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <div className="scanlines"></div>
       
-      {/* APP CONTAINER (Split Layout) */}
+      <div className="mobile-header">
+         <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+           {isMobileMenuOpen ? '✕ Close' : '📂 Files'}
+         </button>
+         <span className="mobile-path">{currentPath}</span>
+      </div>
+
       <div className="app-container">
-        
-        {/* LEFT: File Explorer */}
-        {!isBooting && (
-          <FileExplorer 
-            fileSystem={FILE_SYSTEM} 
-            onNavigate={handleExplorerSelect} 
-          />
+        {bootPhase === 'ready' && (
+           <div className={`explorer-wrapper ${isMobileMenuOpen ? 'open' : ''}`}>
+              <FileExplorer fileSystem={FILE_SYSTEM} onNavigate={handleExplorerSelect} />
+           </div>
         )}
 
-        {/* RIGHT: Terminal Panel */}
         <div className="terminal-panel" onClick={handleFocus}>
-          {isBooting ? (
-            <div className="boot-sequence">
-               <div>INITIALIZING KERNEL...</div>
-               <div>LOADING MODULES...</div>
-               <div style={{ marginTop: '10px', color: 'var(--color-cmd)' }}>{renderLoader()}</div>
-            </div>
+          {bootPhase !== 'ready' ? (
+            renderBootContent()
           ) : (
             <>
               {output.map((line, index) => (
@@ -301,11 +432,19 @@ const Terminal: React.FC = () => {
                 <input
                   ref={inputRef}
                   type="text"
-                  className="terminal-input"
+                  // CONDITIONAL CLASS: If cursor is not at end, add 'editing'
+                  className={`terminal-input ${cursorPos < input.length ? 'editing' : ''}`}
                   style={{ width: `${Math.max(1, input.length)}ch` }} 
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                      setInput(e.target.value);
+                      setCursorPos(e.target.selectionStart || 0);
+                  }}
                   onKeyDown={handleKeyDown}
+                  // TRACK CURSOR MOVEMENT
+                  onSelect={handleSelect}
+                  onClick={handleSelect}
+                  onKeyUp={handleSelect}
                   autoFocus
                   autoComplete="off"
                 />
@@ -316,6 +455,14 @@ const Terminal: React.FC = () => {
           )}
           <div ref={bottomRef} />
         </div>
+
+        {bootPhase === 'ready' && activeFile && (
+          <FileViewer 
+            filename={activeFile.name} 
+            content={activeFile.content} 
+            onClose={() => setActiveFile(null)} 
+          />
+        )}
       </div>
     </>
   );

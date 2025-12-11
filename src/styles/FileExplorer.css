@@ -1,20 +1,25 @@
 /* src/styles/FileExplorer.css */
-
 .file-explorer {
-  width: 250px; /* Fixed width */
+  width: 250px;
   min-width: 200px;
   height: 100%;
-  background-color: #050505; /* Slightly darker than terminal */
-  border-right: 1px solid #333; /* Separator line */
+  background-color: #050505;
+  border-right: 1px solid #333;
   display: flex;
   flex-direction: column;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.95rem;
-  overflow-y: auto; /* Scroll if too many files */
-  
-  /* Scrollbar styling */
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #333 #050505;
+}
+
+/* On mobile, sidebar should take full width of container */
+@media (max-width: 768px) {
+  .file-explorer {
+    width: 100%; 
+    border-right: none;
+  }
 }
 
 .explorer-header {
@@ -27,12 +32,10 @@
   margin-bottom: 0.5rem;
 }
 
-/* Recursive Tree Styles */
 .tree-indent {
   display: flex;
   flex-direction: column;
-  padding-left: 15px; /* Indentation for children */
-  border-left: 1px solid #222; /* Thread guide line */
+  padding-left: 24px; 
 }
 
 .tree-item {
@@ -41,11 +44,20 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #888; /* Default text dim */
+  color: #888;
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+
+/* Touch Targets for Mobile */
+@media (max-width: 768px) {
+  .tree-item {
+    padding: 12px 16px; /* Larger hit area */
+    font-size: 1.1rem;
+    border-bottom: 1px solid #111;
+  }
 }
 
 .tree-item:hover {
@@ -53,6 +65,12 @@
   color: #fff;
 }
 
-/* Icons/Colors */
-.icon-dir { color: #4d96ff; } /* Blue folders */
-.icon-file { color: #e0e0e0; } /* White files */
+.arrow-icon {
+  font-size: 0.7rem;
+  color: #666;
+  width: 10px; 
+  display: inline-block;
+}
+
+.icon-dir { color: #4d96ff; }
+.icon-file { color: #e0e0e0; }

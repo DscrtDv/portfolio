@@ -1,4 +1,3 @@
-/* src/components/Terminal.css */
 :root {
   --bg-color: #0a0a0a;
   --text-main: #e0e0e0;
@@ -20,182 +19,206 @@ body, html, #root {
   display: block;
 }
 
-/* --- MAIN LAYOUT (Split Screen) --- */
+/* --- MOBILE HEADER (Default Hidden) --- */
+.mobile-header {
+  display: none; 
+  height: 50px;
+  background-color: #111;
+  border-bottom: 1px solid #333;
+  align-items: center;
+  padding: 0 1rem;
+  justify-content: space-between;
+  position: relative;
+  z-index: 50;
+  font-family: var(--font-stack);
+}
+
+.mobile-menu-btn {
+  background: #333;
+  border: 1px solid #555;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.mobile-path {
+  color: var(--color-cmd);
+  font-size: 0.9rem;
+}
+
+/* --- MAIN LAYOUT --- */
 .app-container {
   display: flex;
   width: 95%;
-  max-width: 1600px;
-  height: 90vh; /* Takes up 90% of viewport height */
-  margin: 5vh auto; /* Center vertically and horizontally */
+  max-width: 1800px;
+  height: 90vh; 
+  margin: 5vh auto; 
   border: 1px solid #333;
   background-color: var(--bg-color);
   box-shadow: 0 0 20px rgba(0,0,0,0.8);
   position: relative;
-  z-index: 1; /* Sit above scanlines */
+  z-index: 1; 
 }
 
-/* --- TERMINAL PANEL (Right Side) --- */
+/* Wrapper for Explorer */
+.explorer-wrapper {
+  height: 100%;
+  display: block; 
+}
+
+/* TERMINAL PANEL */
 .terminal-panel {
-  flex-grow: 1; /* Fills the rest of the width */
+  flex: 1;
+  min-width: 0; 
   height: 100%;
   padding: 2rem;
   box-sizing: border-box;
-  overflow-y: auto; /* Scroll inside the panel */
-  
+  overflow-y: auto; 
   color: var(--text-main);
   font-family: var(--font-stack);
   font-size: 1.1rem;
   text-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
-
-  /* Scrollbar */
   scrollbar-width: thin;
   scrollbar-color: #333 var(--bg-color);
 }
 
 .terminal-panel::-webkit-scrollbar { width: 10px; }
 .terminal-panel::-webkit-scrollbar-track { background: var(--bg-color); }
-.terminal-panel::-webkit-scrollbar-thumb { 
-  background: #333; 
-  border: 1px solid #555; 
-  border-radius: 4px;
-}
+.terminal-panel::-webkit-scrollbar-thumb { background: #333; border: 1px solid #555; border-radius: 4px; }
 
-/* --- OUTPUT STYLING --- */
-
-/* Generic wrapper for history lines */
-.output-line {
-  margin-bottom: 5px;
-  line-height: 1.5;
-  width: 100%; 
-  display: block; 
-}
-
-/* Wrapper for the USER'S command input in history */
-.command-echo {
+/* BOOT MESSAGES */
+.boot-message {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/* Helper for file content (cat) to preserve newlines */
-.pre-wrap {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* --- MARKDOWN STYLING --- */
-.markdown-output {
-  width: 100%;
-  font-family: var(--font-stack);
-  line-height: 1.6;
-}
-
-.markdown-output h1, 
-.markdown-output h2, 
-.markdown-output h3 {
-  color: var(--color-dir);
-  font-weight: bold;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  font-size: 1.1rem;
-  border-bottom: 1px dashed #333;
-}
-
-.markdown-output p { margin-bottom: 1rem; }
-.markdown-output ul, .markdown-output ol { margin-left: 1.5rem; margin-bottom: 1rem; }
-.markdown-output li { margin-bottom: 0.2rem; list-style: square; }
-.markdown-output a { color: var(--color-cmd); text-decoration: underline; cursor: pointer; }
-.markdown-output code {
-  background-color: #222;
-  padding: 0 4px;
-  border-radius: 2px;
-  color: #ffbd2e;
-}
-
-/* --- ASCII ART --- */
-.ascii-wrapper {
-  width: 100%;
-  display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin-bottom: 20px;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
 }
 
-.ascii-art {
-  font-size: 0.8rem;
-  line-height: 1.2;
-  white-space: pre; 
-  color: var(--color-cmd);
-  font-weight: bold;
-  text-align: left; 
-}
+/* OUTPUT */
+.output-line { margin-bottom: 5px; line-height: 1.5; width: 100%; display: block; }
+.command-echo { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.pre-wrap { white-space: pre-wrap; word-wrap: break-word; }
 
-/* --- UTILITIES --- */
+/* UTILS */
 .is-dir { color: var(--color-dir); font-weight: bold; }
 .is-file { color: var(--color-file); }
 .is-cmd { color: var(--color-cmd); }
 .is-error { color: var(--color-err); }
 
-/* --- INPUT AREA --- */
-.input-area {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
+/* INPUT AREA */
+.input-area { display: flex; align-items: center; margin-top: 10px; }
+.prompt-label { margin-right: 10px; color: var(--color-cmd); font-weight: bold; white-space: nowrap; }
+
+.terminal-input { 
+  background: transparent; 
+  border: none; 
+  color: var(--text-main); 
+  font-family: var(--font-stack); 
+  font-size: 1.1rem; 
+  outline: none; 
+  padding: 0; 
+  margin: 0; 
+  
+  /* Restore the native caret color so user can see it when moving arrows */
+  caret-color: var(--color-cmd); 
+  
+  min-width: 1px; 
 }
 
-.prompt-label {
-  margin-right: 10px;
-  color: var(--color-cmd);
-  font-weight: bold;
-  white-space: nowrap;
+/* CUSTOM CURSOR LOGIC */
+.cursor-block { 
+  display: inline-block; 
+  width: 10px; 
+  height: 1.2rem; 
+  background-color: var(--text-main); 
+  margin-left: 1px; 
+  opacity: 0; 
 }
 
-.terminal-input {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-family: var(--font-stack);
-  font-size: 1.1rem;
-  outline: none;
-  padding: 0;
-  margin: 0;
-  caret-color: transparent;
-  min-width: 1px;
+/* Show block cursor ONLY if focused AND NOT EDITING (not navigating with arrows) */
+.terminal-input:focus:not(.editing) + .cursor-block { 
+  opacity: 1; 
+  animation: blink 1s step-end infinite; 
 }
 
-.cursor-block {
-  display: inline-block;
-  width: 10px;
-  height: 1.2rem;
-  background-color: var(--text-main);
-  animation: blink 1s step-end infinite;
-  margin-left: 1px;
-}
+.click-trap { flex-grow: 1; height: 1.2rem; cursor: text; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-.click-trap {
-    flex-grow: 1;
-    height: 1.2rem;
-    cursor: text;
-}
+/* ASCII ART */
+.ascii-wrapper { width: 100%; display: flex; justify-content: center; margin-bottom: 20px; }
+.ascii-art { font-size: 0.8rem; line-height: 1.2; white-space: pre; color: var(--color-cmd); font-weight: bold; text-align: left; }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
+/* SCANLINES */
+.scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1)); background-size: 100% 4px; pointer-events: none; z-index: 10; }
 
-/* --- CRT OVERLAY --- */
-.scanlines {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0),
-    rgba(255,255,255,0) 50%,
-    rgba(0,0,0,0.1) 50%,
-    rgba(0,0,0,0.1)
-  );
-  background-size: 100% 4px;
-  pointer-events: none;
-  z-index: 10;
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+  body, html {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .mobile-header {
+    display: flex;
+    height: 45px; 
+  }
+
+  .app-container {
+    flex-direction: column;
+    width: 100%;
+    height: calc(100dvh - 45px); 
+    margin: 0;
+    border: none;
+  }
+
+  .terminal-panel {
+    padding: 1rem; 
+    font-size: 0.85rem; 
+  }
+  
+  .terminal-input {
+    font-size: 0.85rem;
+  }
+  
+  .ascii-art {
+    font-size: 0.5rem; 
+  }
+  
+  .boot-message {
+    padding: 1rem;
+  }
+
+  .explorer-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #050505;
+    z-index: 40; 
+    display: none; 
+  }
+
+  .explorer-wrapper.open {
+    display: block; 
+  }
+
+  .file-viewer {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 30; 
+    border-left: none;
+  }
 }

@@ -1,0 +1,135 @@
+/* src/styles/FileViewer.css */
+
+.file-viewer {
+  /* Sharing space equally with terminal (50/50 of remaining space) */
+  flex: 1; 
+  height: 100%;
+  
+  /* DOCUMENT THEME */
+  background-color: #ffffff; 
+  color: #333;
+  
+  border-left: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.2); 
+  
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* Header Bar */
+.viewer-header {
+  background-color: #f0f0f0; /* Light Grey */
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  font-family: var(--font-stack); /* Keep header mono for consistency */
+}
+
+.file-name {
+  font-size: 1rem;
+  color: #333;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.close-btn {
+  background-color: #e81123; /* Bright Red */
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.close-btn:hover {
+  background-color: #b00e1a; /* Darker Red */
+}
+
+/* Content Area */
+.viewer-content {
+  flex-grow: 1;
+  padding: 3rem; /* More whitespace like a real doc */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #fff;
+}
+
+/* Webkit Scrollbar (Chrome/Safari) */
+.viewer-content::-webkit-scrollbar { width: 8px; }
+.viewer-content::-webkit-scrollbar-track { background: #fff; }
+.viewer-content::-webkit-scrollbar-thumb { background-color: #bbb; border-radius: 4px; }
+
+
+/* --- MARKDOWN STYLES (Light Theme) --- */
+
+.viewer-content h1 {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.5rem;
+  color: #111;
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.viewer-content h2 {
+  color: #444;
+  margin-top: 2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.3rem;
+}
+
+.viewer-content h3 {
+  color: #666;
+  margin-top: 1.5rem;
+}
+
+.viewer-content p {
+  margin-bottom: 1.2rem;
+  font-size: 1.05rem;
+}
+
+.viewer-content a {
+  color: #0066cc;
+  text-decoration: none;
+  border-bottom: 1px dotted #0066cc;
+}
+.viewer-content a:hover {
+  background-color: #e6f7ff;
+}
+
+/* Code Blocks on Light Background */
+.viewer-content code {
+  background-color: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #d63384; /* Pink/Red for inline code */
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  border: 1px solid #e0e0e0;
+}
+
+.viewer-content pre {
+  background-color: #f8f8f8;
+  padding: 1.5rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+/* Lists */
+.viewer-content ul, .viewer-content ol {
+  padding-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+.viewer-content li {
+  margin-bottom: 0.5rem;
+}
