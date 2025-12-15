@@ -71,12 +71,19 @@
 
 /* --- MARKDOWN STYLES (Light Theme) --- */
 
+/* ... inside src/styles/FileViewer.css ... */
+
+/* --- MARKDOWN STYLES (Light Theme) --- */
+
 .viewer-content h1 {
   border-bottom: 2px solid #eee;
   padding-bottom: 0.5rem;
   color: #111;
   margin-top: 0;
+  
+  /* FORCE SIZE & WEIGHT */
   font-size: 2rem;
+  font-weight: 700; /* Bold */
 }
 
 .viewer-content h2 {
@@ -84,11 +91,19 @@
   margin-top: 2rem;
   border-bottom: 1px solid #eee;
   padding-bottom: 0.3rem;
+
+  /* ADD THESE LINES */
+  font-size: 1.5rem;
+  font-weight: 600; /* Semi-bold */
 }
 
 .viewer-content h3 {
   color: #666;
   margin-top: 1.5rem;
+  
+  /* ADD THESE LINES */
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .viewer-content p {
@@ -125,11 +140,20 @@
   margin: 1.5rem 0;
 }
 
-/* Lists */
-.viewer-content ul, .viewer-content ol {
-  padding-left: 2rem;
-  margin-bottom: 1.5rem;
+/* RESTORE LIST STYLES */
+.viewer-content ul {
+  list-style-type: disc !important; /* Forces the bullet point (dot) */
+  padding-left: 1.5rem;             /* Indentation to make space for the dot */
+  margin-bottom: 1rem;
 }
+
+.viewer-content ol {
+  list-style-type: decimal !important; /* 1. 2. 3. */
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
 .viewer-content li {
-  margin-bottom: 0.5rem;
+  display: list-item;              /* Ensures it behaves like a list item */
+  margin-bottom: 0.5rem;           /* Spacing between items */
 }

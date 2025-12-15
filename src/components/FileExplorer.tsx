@@ -70,7 +70,7 @@ const FileNode: React.FC<FileNodeProps> = ({ path, fs, onNavigate, expandedFolde
               )}
               
               <span className={isDir ? 'icon-dir' : 'icon-file'}>
-                {isDir ? '📂' : '📄'}
+                {isDir ? '📂' : '▫️'}
               </span>
               <span>{childName}</span>
             </div>
