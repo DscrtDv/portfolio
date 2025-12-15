@@ -62,7 +62,7 @@ const Terminal: React.FC = () => {
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // NEW: Track cursor position to toggle block vs bar cursor
+  // Track cursor position for the hardware cursor block
   const [cursorPos, setCursorPos] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -70,8 +70,6 @@ const Terminal: React.FC = () => {
 
   // --- HELPER: Path Resolution Algorithm ---
   const resolvePath = (base: string, target: string): string => {
-    // 1. If target starts with '~', it's absolute. Ignore base.
-    //    Else, it's relative. Start from base.
     let startParts = base === '~' ? [] : base.slice(2).split('/');
     if (target.startsWith('~/')) {
       startParts = [];
@@ -80,22 +78,17 @@ const Terminal: React.FC = () => {
       return '~';
     }
 
-    // 2. Split target into segments
     const targetParts = target.split('/');
 
-    // 3. Process segments
     for (const part of targetParts) {
-      if (part === '.' || part === '') continue; // Current dir
+      if (part === '.' || part === '') continue; 
       if (part === '..') {
-        // Go back up one level
         if (startParts.length > 0) startParts.pop();
       } else {
-        // Go down
         startParts.push(part);
       }
     }
 
-    // 4. Reconstruct
     if (startParts.length === 0) return '~';
     return '~/' + startParts.join('/');
   };
@@ -257,7 +250,6 @@ const Terminal: React.FC = () => {
         const target = args[1];
         if (!target || target === '.') break;
         
-        // NEW: Resolve Path Logic
         const newPath = resolvePath(currentPath, target);
 
         if (FILE_SYSTEM[newPath] && FILE_SYSTEM[newPath].type === 'dir') {
@@ -271,9 +263,7 @@ const Terminal: React.FC = () => {
         const fileTarget = args[1];
         if (!fileTarget) { response = <span className="is-error">Usage: cat [filename]</span>; break; }
         
-        // NEW: Resolve Path Logic
         const resolvedFilePath = resolvePath(currentPath, fileTarget);
-
         const node = FILE_SYSTEM[resolvedFilePath];
 
         if (node && node.type === 'file' && node.content) {
@@ -429,26 +419,37 @@ const Terminal: React.FC = () => {
 
               <div className="input-area">
                 <span className="prompt-label">guest@system:{currentPath}$</span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  // CONDITIONAL CLASS: If cursor is not at end, add 'editing'
-                  className={`terminal-input ${cursorPos < input.length ? 'editing' : ''}`}
-                  style={{ width: `${Math.max(1, input.length)}ch` }} 
-                  value={input}
-                  onChange={(e) => {
-                      setInput(e.target.value);
-                      setCursorPos(e.target.selectionStart || 0);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  // TRACK CURSOR MOVEMENT
-                  onSelect={handleSelect}
-                  onClick={handleSelect}
-                  onKeyUp={handleSelect}
-                  autoFocus
-                  autoComplete="off"
-                />
-                <span className="cursor-block"></span>
+                
+                {/* NEW WRAPPER for input + cursor */}
+                <div 
+                  className="command-wrapper"
+                  style={{ '--cursor-pos': cursorPos } as React.CSSProperties}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="terminal-input"
+                    style={{ width: `${Math.max(1, input.length + 1)}ch` }} 
+                    value={input}
+                    onChange={(e) => {
+                        setInput(e.target.value);
+                        setCursorPos(e.target.selectionStart || 0);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    
+                    /* Track cursor position events */
+                    onSelect={handleSelect}
+                    onClick={handleSelect}
+                    onKeyUp={handleSelect}
+                    
+                    autoFocus
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
+                  {/* The Hardware Block Cursor */}
+                  <span className="cursor-block"></span>
+                </div>
+
                 <div className="click-trap" onClick={handleFocus}></div>
               </div>
             </>

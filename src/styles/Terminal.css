@@ -110,40 +110,65 @@ body, html, #root {
 .is-cmd { color: var(--color-cmd); }
 .is-error { color: var(--color-err); }
 
-/* INPUT AREA */
-.input-area { display: flex; align-items: center; margin-top: 10px; }
-.prompt-label { margin-right: 10px; color: var(--color-cmd); font-weight: bold; white-space: nowrap; }
-
-.terminal-input { 
-  background: transparent; 
-  border: none; 
-  color: var(--text-main); 
-  font-family: var(--font-stack); 
-  font-size: 1.1rem; 
-  outline: none; 
-  padding: 0; 
-  margin: 0; 
-  
-  /* Restore the native caret color so user can see it when moving arrows */
-  caret-color: var(--color-cmd); 
-  
-  min-width: 1px; 
+/* --- INPUT AREA & RETRO CURSOR --- */
+.input-area {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  position: relative;
 }
 
-/* CUSTOM CURSOR LOGIC */
-.cursor-block { 
-  display: inline-block; 
-  width: 10px; 
-  height: 1.2rem; 
-  background-color: var(--text-main); 
-  margin-left: 1px; 
-  opacity: 0; 
+.prompt-label {
+  margin-right: 10px;
+  color: var(--color-cmd);
+  font-weight: bold;
+  white-space: nowrap;
 }
 
-/* Show block cursor ONLY if focused AND NOT EDITING (not navigating with arrows) */
-.terminal-input:focus:not(.editing) + .cursor-block { 
-  opacity: 1; 
-  animation: blink 1s step-end infinite; 
+/* Holds the input and the floating block together */
+.command-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.terminal-input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-stack);
+  font-size: 1.1rem;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  
+  /* Hide the native bar cursor */
+  caret-color: transparent;
+  
+  /* Ensure 1ch width is consistent */
+  letter-spacing: normal;
+  min-width: 10px; 
+  z-index: 1; /* Below the block cursor */
+}
+
+/* The Hardware Cursor Block */
+.cursor-block {
+  position: absolute;
+  top: 0;
+  /* Moves based on React state passed as CSS var */
+  left: calc(var(--cursor-pos) * 1ch);
+  
+  width: 1ch;
+  height: 1.2rem;
+  background-color: var(--text-main);
+  
+  /* Inverts text color underneath (White on White becomes Black) */
+  mix-blend-mode: difference;
+  
+  pointer-events: none;
+  z-index: 2; /* Above the text */
+  
+  animation: blink 1s step-end infinite;
 }
 
 .click-trap { flex-grow: 1; height: 1.2rem; cursor: text; }
