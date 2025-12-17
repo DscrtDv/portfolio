@@ -16,13 +16,14 @@ TT41 SYSTEM
 
 const SYSTEM_INFO = `
 USER:     guest@tt41
-OS:       PortfolioOS v1.0
-KERNEL:   React + Vite
-UPTIME:   00:00:01
-SHELL:    TS-BASH
-RES:      1920x1080
-THEME:    Cyber Circuit
-CPU:      Virtual Neural Net
+VERSION:  Portfolio v2.1
+STACK:    React + Vite
+SHELL:    tt41BASH
+THEME:    Retro Cyber
+HOWTO:    Type "help" to list
+          available commands.
+          Use fileExplorer to
+          navigate otherwhise.
 `;
 
 const ASCII_WELCOME = `
